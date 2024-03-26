@@ -17,11 +17,29 @@ resource "google_compute_instance" "default" {
       }
     }
   }
-  
+
   network_interface {
     network = "default"
 
     access_config {
     }
   }
+
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    echo "Hello, World" > index.html
+    nohup busybox httpd -f -p 8080 &
+    EOF
+}
+
+resource "google_compute_firewall" "http" {
+  name    = "allow-http"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
 }
